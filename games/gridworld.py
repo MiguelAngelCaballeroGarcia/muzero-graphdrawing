@@ -1,14 +1,15 @@
 import datetime
 import pathlib
 
-import gym
+import gymnasium as gym
 import numpy
 import torch
 
 from .abstract_game import AbstractGame
+from minigrid.wrappers import ImgObsWrapper
 
 try:
-    import gym_minigrid
+    import minigrid
 except ModuleNotFoundError:
     raise ModuleNotFoundError('Please run "pip install gym_minigrid"')
 
@@ -139,10 +140,13 @@ class Game(AbstractGame):
     """
 
     def __init__(self, seed=None):
-        self.env = gym.make("MiniGrid-Empty-Random-6x6-v0")
-        self.env = gym_minigrid.wrappers.ImgObsWrapper(self.env)
+        self.env = gym.make("MiniGrid-Empty-6x6-v0", render_mode="human")
+        self.env = ImgObsWrapper(self.env)
         if seed is not None:
-            self.env.seed(seed)
+            try:
+                self.env.reset(seed=seed)
+            except TypeError:
+                self.env.seed(seed)
 
     def step(self, action):
         """
@@ -151,10 +155,10 @@ class Game(AbstractGame):
         Args:
             action : action of the action_space to take.
 
-        Returns:
-            The new observation, the reward and a boolean if the game has ended.
+        Returns:            The new observation, the reward and a boolean if the game has ended.
         """
-        observation, reward, done, _ = self.env.step(action)
+        observation, reward, terminated, truncated, info = self.env.step(action)
+        done = terminated or truncated
         return numpy.array(observation), reward, done
 
     def legal_actions(self):
@@ -177,7 +181,8 @@ class Game(AbstractGame):
         Returns:
             Initial observation of the game.
         """
-        return numpy.array(self.env.reset())
+        observation, info = self.env.reset()
+        return numpy.array(observation)
 
     def close(self):
         """

@@ -1,7 +1,7 @@
 import datetime
 import pathlib
 
-import gym
+import gymnasium as gym
 import numpy
 import torch
 
@@ -139,7 +139,7 @@ class Game(AbstractGame):
     """
 
     def __init__(self, seed=None):
-        self.env = gym.make("Breakout-v4")
+        self.env = gym.make("ALE/Breakout-v5", render_mode="rgb_array")
         if seed is not None:
             self.env.seed(seed)
 

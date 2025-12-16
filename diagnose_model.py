@@ -367,4 +367,4 @@ class Trajectoryinfo:
         ax.set(ylabel="Timestep")
         ax.set_title(name)
 
-        plt.show(block=False)
+        plt.show(block=True)

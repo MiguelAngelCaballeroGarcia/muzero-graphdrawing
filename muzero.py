@@ -9,7 +9,10 @@ import time
 
 import nevergrad
 import numpy
+
 import ray
+
+
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
@@ -19,6 +22,9 @@ import replay_buffer
 import self_play
 import shared_storage
 import trainer
+
+import os
+os.environ["RAY_DISABLE_DASHBOARD"] = "1"
 
 
 class MuZero:
@@ -93,7 +99,12 @@ class MuZero:
         if 1 < self.num_gpus:
             self.num_gpus = math.floor(self.num_gpus)
 
-        ray.init(num_gpus=total_gpus, ignore_reinit_error=True)
+        ray.init(
+            num_cpus=2, 
+            num_gpus=0,
+            object_store_memory=0.5 * 1024 * 1024 * 1024,
+            ignore_reinit_error=True
+        )
 
         # Checkpoint and replay buffer used to initialize workers
         self.checkpoint = {
