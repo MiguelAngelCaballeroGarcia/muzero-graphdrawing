@@ -9,12 +9,12 @@ from .abstract_game import AbstractGame
 
 
 class MuZeroConfig:
-    def __init__(self, seed=None):
+    def __init__(self):
         # fmt: off
         # More information is available here: https://github.com/werner-duvaud/muzero-general/wiki/Hyperparameter-Optimization
 
         self.env = gym.make("CartPole-v1", render_mode="rgb_array")  # Seed for numpy, torch and the game
-        self.seed = seed
+        self.seed = 0
         self.max_num_gpus = None  # Fix the maximum number of GPUs to use. It's usually faster to use a single GPU (set it to 1) if it has enough memory. None will use every GPUs available
 
 

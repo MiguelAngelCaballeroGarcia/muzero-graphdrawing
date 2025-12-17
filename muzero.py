@@ -73,7 +73,7 @@ class MuZero:
 
         # Fix random generator seed
         numpy.random.seed(self.config.seed)
-        torch.manual_seed(self.config.seed)
+        torch.manual_seed(self.config.seed if self.config.seed is not None else 0)
 
         # Manage GPUs
         if self.config.max_num_gpus == 0 and (
