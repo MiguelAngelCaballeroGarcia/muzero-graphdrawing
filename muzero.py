@@ -99,12 +99,22 @@ class MuZero:
         if 1 < self.num_gpus:
             self.num_gpus = math.floor(self.num_gpus)
 
+        # Initialize Ray with the resources available on this compute node.
+        # Prefer SLURM-provided CPU count when available; otherwise, fall back to os.cpu_count().
+        available_cpus = int(os.environ.get("SLURM_CPUS_ON_NODE") or os.cpu_count() or 1)
+
+        # total_gpus was computed above based on config or torch.cuda.device_count()
         ray.init(
-            num_cpus=2, 
-            num_gpus=0,
-            object_store_memory=0.5 * 1024 * 1024 * 1024,
-            ignore_reinit_error=True
+            num_cpus=available_cpus,
+            num_gpus=int(total_gpus),
+            ignore_reinit_error=True,
         )
+
+        # Optional: enable cuDNN benchmark for potentially better performance on GPU
+        # (useful for stable input shapes; safe to enable on cluster GPUs).
+        if torch.cuda.is_available():
+            torch.backends.cudnn.benchmark = True
+
 
         # Checkpoint and replay buffer used to initialize workers
         self.checkpoint = {
