@@ -36,13 +36,17 @@ class MuZeroConfig:
         self.opponent = None
 
         # Self-play / training
+        # Number of parallel self-play workers (adjust per node CPUs)
         self.num_workers = 1
+
+        # Self-play actors typically do environment + MCTS; keep them on CPU by default.
+        # Reserve the GPU for training when using a single GPU node.
         self.selfplay_on_gpu = False
 
-        # ADD THESE TWO LINES:
-        self.num_gpus = 0              # Number of GPUs to use for training/self-play
-        self.max_num_gpus = None          # Max GPUs available (e.g., 1 or torch.cuda.device_count())
-        
+        # Let the runtime determine the available GPUs (use torch.cuda.device_count() and Slurm allocation).
+        # Keep None so muzero.py can detect the allocated GPUs automatically.
+        self.max_num_gpus = None
+
         self.max_moves = 500  # you can lower this (e.g., n*n * 4)
         self.num_simulations = 50
         self.discount = 1
@@ -92,11 +96,17 @@ class MuZeroConfig:
         self.save_model = True
         self.training_steps = 100000
         
-        self.batch_size = 16
-        
+        # Increase batch size for GPU usage (change down for small tests).
+        # If you have limited GPU memory, reduce this accordingly.
+        self.batch_size = 32
+
         self.checkpoint_interval = 10
         self.value_loss_weight = 0.25
-        self.train_on_gpu = torch.cuda.is_available()
+
+        # Default to using GPU for training on the cluster; you can override at runtime.
+        self.train_on_gpu = True
+
+
         self.optimizer = "Adam"
         self.weight_decay = 1e-4
         self.momentum = 0.9
