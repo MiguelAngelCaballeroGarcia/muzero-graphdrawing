@@ -1,7 +1,7 @@
 import datetime
 import pathlib
 
-import gym
+import gymnasium as gym
 import numpy
 import torch
 
@@ -9,11 +9,12 @@ from .abstract_game import AbstractGame
 
 
 class MuZeroConfig:
-    def __init__(self):
+    def __init__(self, seed=None):
         # fmt: off
         # More information is available here: https://github.com/werner-duvaud/muzero-general/wiki/Hyperparameter-Optimization
 
-        self.seed = 0  # Seed for numpy, torch and the game
+        self.env = gym.make("CartPole-v1", render_mode="rgb_array")  # Seed for numpy, torch and the game
+        self.seed = seed
         self.max_num_gpus = None  # Fix the maximum number of GPUs to use. It's usually faster to use a single GPU (set it to 1) if it has enough memory. None will use every GPUs available
 
 
@@ -148,7 +149,9 @@ class Game(AbstractGame):
         Returns:
             The new observation, the reward and a boolean if the game has ended.
         """
-        observation, reward, done, _ = self.env.step(action)
+        observation, reward, terminated, truncated, info = self.env.step(action)
+        done = terminated or truncated
+
         return numpy.array([[observation]]), reward, done
 
     def legal_actions(self):
@@ -171,7 +174,10 @@ class Game(AbstractGame):
         Returns:
             Initial observation of the game.
         """
-        return numpy.array([[self.env.reset()]])
+        # gymnasium reset returns (obs, info)
+        observation, info = self.env.reset(seed=self.seed)
+        # We wrap it in the 3D array shape MuZero expects
+        return numpy.array([[observation]])
 
     def close(self):
         """
