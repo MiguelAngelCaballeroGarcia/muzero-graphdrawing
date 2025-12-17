@@ -180,9 +180,12 @@ class DiagnoseModel:
                         child,
                         action,
                         node_id,
-                        True
-                        if best_visit_count and child.visit_count == best_visit_count
-                        else False,
+                        (
+                            True
+                            if best_visit_count
+                            and child.visit_count == best_visit_count
+                            else False
+                        ),
                     )
 
         traverse(root, None, None, True)
@@ -219,25 +222,31 @@ class Trajectoryinfo:
             self.reward_history.append(reward)
         self.prior_policies.append(
             [
-                root.children[action].prior
-                if action in root.children.keys()
-                else numpy.NaN
+                (
+                    root.children[action].prior
+                    if action in root.children.keys()
+                    else numpy.NaN
+                )
                 for action in self.config.action_space
             ]
         )
         self.policies_after_planning.append(
             [
-                root.children[action].visit_count / self.config.num_simulations
-                if action in root.children.keys()
-                else numpy.NaN
+                (
+                    root.children[action].visit_count / self.config.num_simulations
+                    if action in root.children.keys()
+                    else numpy.NaN
+                )
                 for action in self.config.action_space
             ]
         )
         self.values_after_planning.append(
             [
-                root.children[action].value()
-                if action in root.children.keys()
-                else numpy.NaN
+                (
+                    root.children[action].value()
+                    if action in root.children.keys()
+                    else numpy.NaN
+                )
                 for action in self.config.action_space
             ]
         )
@@ -249,9 +258,11 @@ class Trajectoryinfo:
         self.root_value_after_planning.append(root.value())
         self.prior_rewards.append(
             [
-                root.children[action].reward
-                if action in root.children.keys()
-                else numpy.NaN
+                (
+                    root.children[action].reward
+                    if action in root.children.keys()
+                    else numpy.NaN
+                )
                 for action in self.config.action_space
             ]
         )

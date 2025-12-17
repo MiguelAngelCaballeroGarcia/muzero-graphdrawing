@@ -7,6 +7,7 @@ import random
 import random
 from typing import List, Tuple, Dict
 
+
 def generate_connected_random_graph(n: int, s: float = 0.3):
     """
     Generate:
@@ -24,7 +25,7 @@ def generate_connected_random_graph(n: int, s: float = 0.3):
     all_positions = [(i, j) for i in range(n) for j in range(n)]
     chosen = random.sample(all_positions, n)
 
-    node_ids = [i*n + j + 1 for (i, j) in chosen]  # flattened IDs
+    node_ids = [i * n + j + 1 for (i, j) in chosen]  # flattened IDs
     pos_map = {node_ids[k]: chosen[k] for k in range(n)}
 
     # Step 2 — build a connected random graph on these n nodes
@@ -39,14 +40,14 @@ def generate_connected_random_graph(n: int, s: float = 0.3):
         edges.append((u, v))
 
     # Step 3 — add more edges according to sparsity
-    present = set((min(a,b), max(a,b)) for a,b in edges)
+    present = set((min(a, b), max(a, b)) for a, b in edges)
 
     # possible remaining pairs
     candidates = [
         (min(a, b), max(a, b))
         for i, a in enumerate(node_ids)
-        for b in node_ids[i+1:]
-        if (min(a,b), max(a,b)) not in present
+        for b in node_ids[i + 1 :]
+        if (min(a, b), max(a, b)) not in present
     ]
 
     # s controls number of extra edges

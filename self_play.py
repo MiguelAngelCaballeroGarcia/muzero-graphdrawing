@@ -150,10 +150,12 @@ class SelfPlay:
                     )
                     action = self.select_action(
                         root,
-                        temperature
-                        if not temperature_threshold
-                        or len(game_history.action_history) < temperature_threshold
-                        else 0,
+                        (
+                            temperature
+                            if not temperature_threshold
+                            or len(game_history.action_history) < temperature_threshold
+                            else 0
+                        ),
                     )
 
                     if render:
@@ -499,9 +501,11 @@ class GameHistory:
             sum_visits = sum(child.visit_count for child in root.children.values())
             self.child_visits.append(
                 [
-                    root.children[a].visit_count / sum_visits
-                    if a in root.children
-                    else 0
+                    (
+                        root.children[a].visit_count / sum_visits
+                        if a in root.children
+                        else 0
+                    )
                     for a in action_space
                 ]
             )

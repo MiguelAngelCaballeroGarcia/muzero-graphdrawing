@@ -25,7 +25,9 @@ class MuZeroConfig:
 
         # Action space: fixed discrete set: k nodes (== grid_size) × (n*n target cells)
         # action_id = node_index * (n*n) + (flatpos - 1)
-        self.action_space = list(range(self.grid_size * (self.grid_size * self.grid_size)))
+        self.action_space = list(
+            range(self.grid_size * (self.grid_size * self.grid_size))
+        )
 
         # Single-player style environment: MuZero plays alone (no opponent)
         self.players = list(range(1))
@@ -66,36 +68,43 @@ class MuZeroConfig:
 
         # <-- ADD THIS MISSING ATTRIBUTE -->
         self.blocks = 3  # Use num_resnet_blocks here for compatibility
-        
-        self.num_channels = 64    # Number of convolutional channels (filters)
-        self.num_resnet_blocks = 3 # Number of residual blocks (depth)
-        self.downsample = False    # Set to True if input size > output size (not needed here)
+
+        self.num_channels = 64  # Number of convolutional channels (filters)
+        self.num_resnet_blocks = 3  # Number of residual blocks (depth)
+        self.downsample = (
+            False  # Set to True if input size > output size (not needed here)
+        )
 
         self.channels = self.num_channels
 
         # <--- ADD THESE RESNET HEAD LAYERS --->
         self.reduced_channels_reward = 16  # Channels for the reward prediction head
-        self.reduced_channels_value = 16   # Channels for the value prediction head
+        self.reduced_channels_value = 16  # Channels for the value prediction head
         self.reduced_channels_policy = 16  # Channels for the policy prediction head
-        
+
         # Define the FC layers within the ResNet heads
-        self.resnet_fc_reward_layers = [32] 
-        self.resnet_fc_value_layers = [32]  
-        self.resnet_fc_policy_layers = [32] 
+        self.resnet_fc_reward_layers = [32]
+        self.resnet_fc_value_layers = [32]
+        self.resnet_fc_policy_layers = [32]
         # <--- END MISSING RESNET HEAD LAYERS --->
-        
+
         # ADD ALL MISSING FC LAYER DEFINITIONS HERE:
-        self.fc_representation_layers = [] # Added
-        self.fc_dynamics_layers = [64]    # Added
-        self.fc_reward_layers = [64]      # Already added (from previous fix)
-        self.fc_value_layers = []         # Added
-        self.fc_policy_layers = []        # Added
+        self.fc_representation_layers = []  # Added
+        self.fc_dynamics_layers = [64]  # Added
+        self.fc_reward_layers = [64]  # Already added (from previous fix)
+        self.fc_value_layers = []  # Added
+        self.fc_policy_layers = []  # Added
 
         # Training hyperparams (examples)
-        self.results_path = pathlib.Path(__file__).resolve().parents[1] / "results" / pathlib.Path(__file__).stem / datetime.datetime.now().strftime("%Y-%m-%d--%H-%M-%S")
+        self.results_path = (
+            pathlib.Path(__file__).resolve().parents[1]
+            / "results"
+            / pathlib.Path(__file__).stem
+            / datetime.datetime.now().strftime("%Y-%m-%d--%H-%M-%S")
+        )
         self.save_model = True
         self.training_steps = 100000
-        
+
         # Increase batch size for GPU usage (change down for small tests).
         # If you have limited GPU memory, reduce this accordingly.
         self.batch_size = 32
@@ -105,7 +114,6 @@ class MuZeroConfig:
 
         # Default to using GPU for training on the cluster; you can override at runtime.
         self.train_on_gpu = True
-
 
         self.optimizer = "Adam"
         self.weight_decay = 1e-4
@@ -137,12 +145,14 @@ class Game(AbstractGame):
 
     def __init__(self, seed: Optional[int] = None):
         cfg = MuZeroConfig()
-        self.env = GraphEnv(n=cfg.grid_size, s=cfg.sparsity, max_moves=cfg.max_moves, seed=seed)
+        self.env = GraphEnv(
+            n=cfg.grid_size, s=cfg.sparsity, max_moves=cfg.max_moves, seed=seed
+        )
 
     def step(self, action: int):
         obs, reward, done = self.env.step(action)
         # wrapper scaling (MuZero examples sometimes scale reward)
-        return obs, reward*10, done
+        return obs, reward * 10, done
 
     def to_play(self):
         # Single-player (always player 0)
@@ -182,7 +192,13 @@ class GraphEnv:
         - flatpos in 1..(n*n) is the target cell (row,col) -> flat = row*n + col + 1
     """
 
-    def __init__(self, n: int = 4, s: float = 0.3, max_moves: int = 200, seed: Optional[int] = None):
+    def __init__(
+        self,
+        n: int = 4,
+        s: float = 0.3,
+        max_moves: int = 200,
+        seed: Optional[int] = None,
+    ):
         self.n = n
         self.s = s
         self.max_moves = max_moves
@@ -216,14 +232,20 @@ class GraphEnv:
         return node_id, (i, j)
 
     def _action_encode(self, node_idx: int, flatpos: int) -> int:
-        return node_idx * (self.n * self.n) + (flatpos - 1)         # N*n*n (N = number of nodes, n*n = size of the grid)
+        return node_idx * (self.n * self.n) + (
+            flatpos - 1
+        )  # N*n*n (N = number of nodes, n*n = size of the grid)
 
     # ----- environment lifecycle -----
     def _build_new_game(self):
         """Construct a fresh graph drawing from generator."""
-        n, pos_map, edges = graph_generation.generate_connected_random_graph(self.n, self.s)
+        n, pos_map, edges = graph_generation.generate_connected_random_graph(
+            self.n, self.s
+        )
         # generator returns n, pos_map, edges where n == self.n
-        self.graph = graph_drawing.GraphDrawing(n=n, pos=pos_map, edges=edges, build_tensor=True)
+        self.graph = graph_drawing.GraphDrawing(
+            n=n, pos=pos_map, edges=edges, build_tensor=True
+        )
         self.steps = 0
 
     def reset(self):
@@ -296,7 +318,7 @@ class GraphEnv:
         if self.graph.crossings == 0 and done:
             # Add a large positive reward for solving the game
             reward += 1000.0
-        
+
         return self.get_observation(), reward, done
 
     # ----- optional helpers -----
@@ -318,5 +340,7 @@ class GraphEnv:
         return 0
 
     def render(self):
-        self.graph.plot(show_ids=True, title=f"Steps: {self.steps}, Crossings: {self.graph.crossings}")
-
+        self.graph.plot(
+            show_ids=True,
+            title=f"Steps: {self.steps}, Crossings: {self.graph.crossings}",
+        )

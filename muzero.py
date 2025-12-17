@@ -24,6 +24,7 @@ import shared_storage
 import trainer
 
 import os
+
 os.environ["RAY_DISABLE_DASHBOARD"] = "1"
 
 
@@ -101,7 +102,9 @@ class MuZero:
 
         # Initialize Ray with the resources available on this compute node.
         # Prefer SLURM-provided CPU count when available; otherwise, fall back to os.cpu_count().
-        available_cpus = int(os.environ.get("SLURM_CPUS_ON_NODE") or os.cpu_count() or 1)
+        available_cpus = int(
+            os.environ.get("SLURM_CPUS_ON_NODE") or os.cpu_count() or 1
+        )
 
         # total_gpus was computed above based on config or torch.cuda.device_count()
         ray.init(
@@ -114,7 +117,6 @@ class MuZero:
         # (useful for stable input shapes; safe to enable on cluster GPUs).
         if torch.cuda.is_available():
             torch.backends.cudnn.benchmark = True
-
 
         # Checkpoint and replay buffer used to initialize workers
         self.checkpoint = {
