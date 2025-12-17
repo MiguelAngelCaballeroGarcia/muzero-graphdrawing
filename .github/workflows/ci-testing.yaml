@@ -28,7 +28,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.lock
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Training test
         shell: bash
